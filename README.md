@@ -1,336 +1,93 @@
+# Meta-Ride / Pull Aceros
 
-# Meta-Ride | Pull Aceros
+Aplicación local React + Vite + Tailwind y FastAPI + SimPy, con PostgreSQL persistente, SQLAlchemy y Alembic. Se conserva el proyecto original y sus datos. SQLite queda como compatibilidad para pruebas y archivo previo a la migración.
 
-### Sistema de Gestión y Simulación de Solicitudes de Acero
+## Ejecutar
 
-Proyecto académico desarrollado para la materia de **Modelado y Simulación de Sistemas** de la **Universidad Autónoma de Nuevo León (UANL)**.
+Requisitos: Node.js/npm y Python 3.12. Sin Docker.
 
-Meta-Ride es un prototipo web diseñado para gestionar y visualizar solicitudes internas de rollos de acero hacia las estampadoras **ENN1–ENN6**.
-
-Además, incorpora un simulador de eventos discretos desarrollado en Python que permite evaluar cómo cambia el desempeño del proceso al modificar la cantidad de montacargas, operadores y solicitudes.
-
-> **Nota:** Este sistema es un prototipo académico. Las interfaces operativas utilizan datos de demostración y los resultados de simulación se generan mediante supuestos hipotéticos.
-
----
-
-## Tecnologías utilizadas
-
-| Componente | Tecnología |
-|---|---|
-| Frontend | React + JavaScript (JSX) |
-| Herramienta de desarrollo | Vite |
-| Diseño | Tailwind CSS |
-| Componentes visuales | Lucide React y componentes UI |
-| Backend | Python 3.12 |
-| API | FastAPI |
-| Servidor | Uvicorn |
-| Motor de simulación | SimPy |
-| Control de versiones | Git y GitHub |
-
----
-
-## Funcionalidades
-
-### 1. Gestión de solicitudes
-
-- Inicio de sesión demostrativo con diferentes roles.
-- Panel principal con indicadores operativos.
-- Visualización de solicitudes mediante tablero Kanban.
-- Registro de nuevas solicitudes de acero.
-- Consulta de inventario.
-- Visualización de historial de movimientos.
-- Pantallas de cambio de turno y administración.
-
-### 2. Simulación de eventos discretos
-
-El simulador permite modificar:
-
-- Cantidad de solicitudes de acero.
-- Número de montacargas disponibles.
-- Número de operadores disponibles.
-- Tipo de demanda.
-
-El modelo simula la atención de solicitudes durante un turno de 8 horas.
-
-**Supuestos del modelo:**
-
-| Parámetro | Valor |
-|---|---|
-| Duración del turno | 480 minutos |
-| Preparación de material | 5 a 12 minutos |
-| Traslado del material | 8 a 20 minutos |
-| Réplicas de simulación | 10 |
-| Atención normal | Orden de llegada (FIFO) |
-
-### 3. Indicadores de simulación
-
-El sistema calcula:
-
-- Tiempo promedio de entrega.
-- Tiempo promedio de espera.
-- Entregas completadas durante el turno.
-- Porcentaje de cumplimiento del turno.
-
-También permite comparar escenarios utilizando entre **1 y 4 montacargas**.
-
----
-
-# Instalación del proyecto
-
-## 1. Requisitos previos
-
-Antes de ejecutar el sistema, instalar:
-
-- Node.js y npm.
-- Python 3.12.
-- Git.
-- Visual Studio Code (recomendado).
-
-Verificar las instalaciones desde PowerShell:
-
-```powershell
-node --version
-npm --version
-py -3.12 --version
-git --version
-```
-
----
-
-## 2. Clonar el repositorio
-
-Abrir PowerShell o la terminal de Visual Studio Code.
-
-Ejecutar:
-
-```powershell
-git clone https://github.com/fcobonilla0902/pull_aceros.git
-```
-
-Entrar a la carpeta del proyecto:
-
-```powershell
-cd pull_aceros
-```
-
----
-
-## 3. Instalar dependencias del frontend
-
-Desde la carpeta principal:
+En la raíz:
 
 ```powershell
 npm install
+npm run dev
 ```
 
-Este comando instalará las dependencias necesarias para ejecutar React y Vite.
-
----
-
-## 4. Configurar el backend de Python
-
-Abrir otra terminal y entrar a la carpeta del backend:
+En otra terminal:
 
 ```powershell
 cd backend
-```
-
-Crear un entorno virtual utilizando Python 3.12:
-
-```powershell
 py -3.12 -m venv .venv
-```
-
-Instalar las dependencias:
-
-```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\run.ps1
 ```
 
-Si no existe `requirements.txt`, instalar las dependencias principales:
+El script verifica dependencias, aplica migraciones, respalda la base existente y solicita una contraseña inicial de al menos 12 caracteres si no hay usuarios. Inicia sesión con usuario **admin** y esa contraseña. No hay contraseña predeterminada. En arranques posteriores la contraseña permanece hasheada en la base de datos y no se solicita nuevamente en terminal.
+
+Frontend: http://localhost:5173. API y documentación: http://127.0.0.1:8000/docs. Vite redirige /api y /simular a FastAPI; conserva el origen de las cookies.
+
+Alternativa manual al script:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install fastapi "uvicorn[standard]" simpy
-```
-
----
-
-# Ejecución del sistema
-
-Para utilizar el proyecto se necesitan **dos terminales abiertas al mismo tiempo**.
-
-## Terminal 1: Iniciar el backend
-
-Desde la carpeta `backend`:
-
-```powershell
+cd backend
+.\.venv\Scripts\python.exe -m alembic upgrade head
+$env:METARIDE_ADMIN_PASSWORD = 'elige-una-clave-larga-y-unica'
 .\.venv\Scripts\python.exe -m uvicorn main:app --reload
 ```
 
-El servidor estará disponible en:
+La variable solo se usa al crear la primera cuenta. No compartas contraseñas ni archivos de base de datos en Git.
 
-http://127.0.0.1:8000
+## Primer recorrido
 
-Documentación interactiva de la API:
+1. En Administración crea números de parte y especificaciones, ubicaciones y montacargas. Crea cuentas de Producción, Logística y Operador.
+2. En Inventario registra rollos con código único, número de parte, ubicación y kg. La regla heredada exige DISP y >500 kg para reservar.
+3. Producción crea una solicitud con estampadora, proceso, prioridad, riesgo, punto de entrega, fecha/hora y partidas; puede seleccionar un rollo específico.
+4. Logística abre la tarjeta Kanban, valida y reserva stock; asigna operador y montacargas opcional; registra preparación, localización y traslado.
+5. Confirma entrega completa o selecciona rollos para una entrega parcial, indicando responsable. Incidencias registran causa y si existe paro de Producción; requieren descripción y resolución.
+6. Consulta indicadores por periodo, movimientos por turno y causas de retraso; exporta CSV. En Cambio de turno selecciona destinatario y registra notas. La persona entrante inicia sesión y acepta digitalmente los pendientes; queda evidencia con usuario, hora y copia del estado al entregar.
+7. Ejecuta SimPy y compara recursos o FIFO/urgentes; las simulaciones quedan guardadas. Las opciones avanzadas permiten variar duración del turno, localización, incidencias, distribuciones y plazo de entrega. Los rangos históricos de preparación/traslado requieren cinco muestras válidas por etapa. El riesgo simulado de paro es hipotético y depende de una tolerancia configurable.
 
-http://127.0.0.1:8000/docs
+Las pantallas inician sin datos operativos ficticios. Los roles y permisos se comprueban también en el servidor.
 
-**Importante:** Mantener esta terminal abierta.
+Producción registra solicitudes; Logística coordina validación, asignación y modificaciones; el operador avanza sus movimientos asignados. La recepción de turno está disponible para personal autorizado y debe confirmarla una persona distinta de quien entrega.
 
----
+## Persistencia y configuración
 
-## Terminal 2: Iniciar el frontend
+Motor activo: PostgreSQL local, base `metaride` en `127.0.0.1:5432`. La conexión privada se carga desde `backend/.env`. Los archivos del clúster están en `backend/.postgres/data/`; no se editan a mano. Alembic administra el esquema. Respaldos: Administración o `manage.py backup`, formato `.dump`. La SQLite previa se conservó y ya no recibe operaciones. Ver [docs/POSTGRESQL.md](docs/POSTGRESQL.md).
 
-Desde la carpeta principal del proyecto:
+Variables opcionales:
 
-```powershell
-npm run dev
-```
+- `DATABASE_URL`: URL SQLAlchemy PostgreSQL con psycopg, guardada privadamente en backend/.env tras la copia verificada. Una variable explícita permite usar una base aislada de pruebas.
+- `PG_BIN`: carpeta con pg_ctl, pg_dump y pg_restore.
+- `PG_LOCAL_AUTOSTART=true`: run.ps1 inicia el clúster local si es necesario.
+- `BACKUP_DIR`: carpeta local de respaldos; predeterminada `backend/backups`.
+- `METARIDE_ADMIN_PASSWORD`: contraseña de arranque inicial, mínimo 12 caracteres.
+- `COOKIE_SECURE=true`: obligatorio al servir remotamente por HTTPS; mantener false en desarrollo HTTP local.
+- `PLANT_TIMEZONE`: zona IANA para indicadores de turno; predeterminada `America/Monterrey`. T1 06:00–14:00, T2 14:00–21:30, T3 21:30–06:00. El turno nocturno se atribuye al día de su inicio.
+- `CORS_ORIGINS`: orígenes permitidos separados por comas, sin espacios. Por defecto localhost/127.0.0.1 en puertos 5173 y 5174.
+- `VITE_API_URL`: origen API si no se usa proxy. `VITE_SIM_API` se conserva como alternativa compatible. En un despliegue debe configurarse proxy al backend para API y simulación y permitir el origen correspondiente en CORS si se separan.
 
-Vite mostrará una dirección local, normalmente:
+Las sesiones opacas duran ocho horas; las cookies son HttpOnly y SameSite=Strict. Contraseñas scrypt con sal aleatoria. No se almacenan tokens en localStorage. El backend limita intentos fallidos de login y registra operaciones en bitácora.
 
-http://localhost:5173
-
-Abrir esa dirección en el navegador para utilizar Meta-Ride.
-
----
-
-# Funcionamiento de la simulación
-
-El sistema utiliza la siguiente arquitectura:
-
-```text
-                USUARIO
-                   |
-                   v
-          INTERFAZ REACT
-                   |
-                   v
-            API FASTAPI
-                   |
-                   v
-          SIMULADOR SIMPY
-                   |
-                   v
-       CÁLCULO DE RESULTADOS
-                   |
-                   v
-           RESPUESTA JSON
-                   |
-                   v
-        RESULTADOS EN REACT
-```
-
-### Proceso de simulación
-
-1. El usuario configura la cantidad de solicitudes, montacargas y operadores.
-2. React envía los parámetros a FastAPI.
-3. FastAPI ejecuta el modelo de simulación desarrollado con SimPy.
-4. SimPy representa la llegada de solicitudes y la disponibilidad de recursos.
-5. Se calculan los tiempos de espera y entrega.
-6. El backend devuelve los resultados a React.
-7. La interfaz presenta los indicadores para analizar el escenario.
-
-### Comparación de escenarios
-
-El sistema permite comparar el comportamiento del proceso utilizando diferentes cantidades de montacargas.
-
-Esto ayuda a identificar posibles cuellos de botella y analizar alternativas para mejorar el surtimiento de acero.
-
----
-
-# Estructura del proyecto
-
-```text
-pull_aceros/
-|
-|-- backend/
-|   |-- main.py
-|   |-- requirements.txt
-|
-|-- src/
-|   |-- App.jsx
-|   |-- SimulationPage.jsx
-|   |-- ...
-|
-|-- package.json
-|-- package-lock.json
-|-- vite.config.js
-|-- .gitignore
-|-- README.md
-```
-
-La estructura mostrada representa los archivos principales del sistema.
-
----
-
-# Solución de problemas
-
-### Error: npm no se reconoce
-
-Verificar que Node.js esté instalado:
+## Verificación
 
 ```powershell
-node --version
+npm run lint
+npm run build
+cd backend
+.\.venv\Scripts\python.exe -m unittest test_integration
 ```
 
-Si no está instalado, descargarlo desde:
+Las pruebas usan una base temporal independiente. No modifican la SQLite operativa.
 
-https://nodejs.org/
-
-### Error: No module named 'simpy'
-
-Instalar las dependencias del backend:
+Prueba opcional con Chrome instalado, sin ventana y con base/perfil temporales:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+backend\.venv\Scripts\python.exe backend\check_browser.py
 ```
 
-### Error: Could not read package.json
+Utiliza puertos locales 8107, 5179 y 9337, que deben estar libres. Guarda una captura en `artifacts/resumen-browser.png` (datos de prueba). Comprueba crear/editar usuarios, importar CSV, editar cantidades y reservas, flujo completo, respaldo, cambio de contraseña, entrega/aceptación de turno, SimPy y ancho móvil.
 
-Este error ocurre cuando se ejecuta npm desde una carpeta incorrecta.
+Correspondencia con la propuesta suministrada: [docs/REQUISITOS_DOCUMENTO.md](docs/REQUISITOS_DOCUMENTO.md).
 
-Regresar a la carpeta principal del proyecto, donde se encuentra `package.json`, y ejecutar:
-
-```powershell
-npm install
-npm run dev
-```
-
-### Error: Failed to fetch
-
-Puede ocurrir cuando React no consigue conectarse al backend.
-
-Verificar que FastAPI esté ejecutándose:
-
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn main:app --reload
-```
-
-Comprobar que la API responda en:
-
-http://127.0.0.1:8000/docs
-
----
-
-# Consideraciones
-
-- Proyecto desarrollado con fines académicos.
-- El simulador utiliza tiempos y distribuciones hipotéticas.
-- Los resultados pueden variar según los parámetros configurados.
-- El sistema no está conectado a un inventario industrial real.
-- Se requieren datos operativos reales para validar el modelo antes de utilizarlo en decisiones de producción.
-
----
-
-## Información académica
-
-**Proyecto:** Meta-Ride | Pull Aceros
-
-**Materia:** Modelado y Simulación de Sistemas
-
-**Institución:** Universidad Autónoma de Nuevo León (UANL)
-
-**Facultad:** Facultad de Ingeniería Mecánica y Eléctrica (FIME)
-
-**Tipo de proyecto:** Prototipo web con simulación de eventos discretos.
+Guía de usuarios, contraseñas, edición de solicitudes, importación Excel/CSV de QAD, catálogos y recuperación: [docs/MANTENIMIENTO_LOCAL.md](docs/MANTENIMIENTO_LOCAL.md). Las funciones de mantenimiento local están implementadas. PostgreSQL es el motor activo y está probado con transacciones simultáneas; la simulación todavía requiere datos reales para validación industrial. Migración, credenciales técnicas, archivos y respaldo: [docs/POSTGRESQL.md](docs/POSTGRESQL.md).
