@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath $archive) -or (Get-FileHash -LiteralPath $archi
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo descargar PostgreSQL.' }
 }
 if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ne $expected) { throw 'El archivo no coincide con el SHA-256 publicado por EDB; no se ejecutará.' }
-# Extract the server and tools only; pgAdmin and documentation are not needed to run Meta-Ride.
+# Extrae solo el servidor y las herramientas; pgAdmin y la documentación no son necesarios para ejecutar Meta-Ride.
 $extract=@'
 import sys,zipfile
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""Administration with session revocation and preservation of operational history."""
+"""Administración con revocación de sesiones y conservación del historial operativo."""
 import json
 from fastapi import APIRouter, Depends, Request as HTTPRequest
 from sqlalchemy import select, update, delete, func
@@ -13,7 +13,7 @@ router=APIRouter(prefix='/api')
 
 @router.patch('/users/{id}')
 def edit_user(id:int,data:UserUpdate,user=Depends(require('admin')),db=Depends(db_session,scope='function')):
-    # Serialize administrator changes, including concurrent demotions of each other.
+    # Serializa los cambios de administradores, incluidas las reducciones de permisos mutuas y simultáneas.
     db.execute(update(Role).where(Role.name=='Administrador').values(name=Role.name))
     db.refresh(user)
     if not user.active or 'admin' not in [p.name for p in user.role.permissions]:fail('Tu acceso administrativo cambió',403)

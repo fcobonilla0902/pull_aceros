@@ -1,4 +1,4 @@
-"""Local backup recovery. Does not restore anything without explicit confirmation."""
+"""Recuperación de respaldos locales. No restaura nada sin confirmación explícita."""
 import argparse
 import json
 from backups import create_snapshot,restore_snapshot

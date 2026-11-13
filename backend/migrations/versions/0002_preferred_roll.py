@@ -1,4 +1,4 @@
-﻿"""Allow production to require a specific physical roll."""
+﻿"""Permite que producción solicite un rollo físico específico."""
 from alembic import op
 import sqlalchemy as sa
 revision = '0002'

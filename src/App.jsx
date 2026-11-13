@@ -1,3 +1,4 @@
+import { formatDuration } from './lib/time';
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api, post } from "./api";
@@ -54,7 +55,7 @@ function RequestCard({ request, onOpen }) {
         <p className="truncate text-xs text-slate-500">{request.owner}</p>
         <p className="mt-1 text-xs text-slate-500">{request.items.map(i=>i.part).join(', ')}</p>
         <p className="mt-2 text-xs">Requerido: {new Date(request.required_at+'Z').toLocaleString('es-MX')}</p>
-        <p className={`mt-1 text-xs font-semibold ${request.remaining_minutes<0?'text-red-700':request.remaining_minutes<=30?'text-amber-700':'text-slate-600'}`}>{['Entregado','Cancelado'].includes(request.state)?request.state:request.remaining_minutes<0?`${Math.ceil(-request.remaining_minutes)} min de retraso`:`Vence en ${Math.ceil(request.remaining_minutes)} min`}</p>
+        <p className={`mt-1 text-xs font-semibold ${request.remaining_minutes<0?'text-red-700':request.remaining_minutes<=30?'text-amber-700':'text-slate-600'}`}>{['Entregado','Cancelado'].includes(request.state)?request.state:request.remaining_minutes<0?`${formatDuration(request.remaining_minutes)} de retraso`:`Vence en ${formatDuration(request.remaining_minutes)}`}</p>
       </div>
     </motion.button>
   );

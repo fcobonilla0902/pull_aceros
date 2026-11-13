@@ -1,4 +1,4 @@
-﻿"""Preserve the quantity invariant after SQLite table recreation."""
+﻿"""Conserva la restricción de cantidades después de recrear la tabla en SQLite."""
 from alembic import op
 revision = '0003'
 down_revision = '0002'

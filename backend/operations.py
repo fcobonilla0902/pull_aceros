@@ -1,4 +1,4 @@
-"""Shared operational definitions, independent of browser locale."""
+"""Definiciones operativas compartidas, independientes de la configuración regional del navegador."""
 import os
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
@@ -15,7 +15,7 @@ def shift_at(utc_timestamp):
     return {'shift': shift, 'date': operating_date.isoformat()}
 
 def utc_period(start, end):
-    """Inclusive local dates converted to a half-open UTC period."""
+    """Fechas locales inclusivas convertidas a un intervalo UTC con inicio incluido y fin excluido."""
     zone = ZoneInfo(PLANT_TIMEZONE)
     lower = datetime.combine(start, datetime.min.time(), zone).astimezone(timezone.utc).replace(tzinfo=None) if start else None
     upper = datetime.combine(end + timedelta(days=1), datetime.min.time(), zone).astimezone(timezone.utc).replace(tzinfo=None) if end else None

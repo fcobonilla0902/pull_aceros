@@ -1,4 +1,4 @@
-"""Receipt of shift responsibility and structured production incidents."""
+"""Recepción de la responsabilidad del turno e incidentes de producción estructurados."""
 from alembic import op
 import sqlalchemy as sa
 revision = '0004'

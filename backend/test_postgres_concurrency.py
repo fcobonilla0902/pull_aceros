@@ -1,4 +1,4 @@
-"""Real PostgreSQL transactions competing for steel, operators and equipment."""
+"""Transacciones reales de PostgreSQL que compiten por acero, operadores y equipos."""
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime,timedelta,timezone
 import os

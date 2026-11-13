@@ -1,4 +1,4 @@
-"""A physical resource cannot serve two open movements, regardless of client races."""
+"""Un recurso físico no puede atender dos movimientos abiertos, incluso con solicitudes simultáneas de los clientes."""
 from alembic import op
 import sqlalchemy as sa
 revision='0006'

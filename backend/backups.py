@@ -1,4 +1,4 @@
-"""Consistent SQLite/PostgreSQL backups and guarded offline restoration."""
+"""Respaldos consistentes de SQLite/PostgreSQL y restauración protegida sin conexión."""
 from contextlib import contextmanager,closing
 from datetime import datetime,timezone
 import json
@@ -40,7 +40,7 @@ def backup_dir():
 
 @contextmanager
 def database_guard(database_url=None,shared=False):
-    """API lifetimes share a PostgreSQL advisory lock; restoration requires exclusivity."""
+    """Las instancias de la API comparten un bloqueo consultivo de PostgreSQL; la restauración requiere acceso exclusivo."""
     url=make_url(database_url) if database_url else engine.url
     if url.get_backend_name()=='postgresql':
         own_engine=create_engine(url,poolclass=NullPool) if database_url else None
@@ -55,7 +55,7 @@ def database_guard(database_url=None,shared=False):
                 finally:
                     try:connection.execute(text(f'SELECT {unlock}(:key)'),{'key':LOCK_KEY})
                     except DBAPIError as error:
-                        # Stopping PostgreSQL closes this session and releases its advisory locks.
+                        # Detener PostgreSQL cierra esta sesión y libera sus bloqueos consultivos.
                         if not error.connection_invalidated and getattr(error.orig,'sqlstate',None) not in ['57P01','08006']:raise
         finally:
             if own_engine:own_engine.dispose()
@@ -175,7 +175,7 @@ def restore_snapshot(name,confirmation):
         if (snapshot.suffix=='.dump')!=postgres:raise ValueError('El respaldo pertenece a otro motor; usa la herramienta de migración para trasladar SQLite a PostgreSQL')
         validate_snapshot(snapshot)
         if postgres:
-            # Validate schema and administrator in a disposable database before touching production.
+            # Valida el esquema y el administrador en una base de datos temporal antes de modificar la de producción.
             with staging_database() as staging:
                 pg_command('pg_restore',['--clean','--if-exists','--no-owner','--no-privileges','--exit-on-error','--single-transaction','--dbname',staging.database,snapshot],staging)
                 validate_postgres_contents(staging)

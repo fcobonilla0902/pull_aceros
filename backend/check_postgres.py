@@ -1,4 +1,4 @@
-"""Validate against disposable PostgreSQL databases; never tests on the live database."""
+"""Valida con bases de datos temporales de PostgreSQL; nunca ejecuta pruebas sobre la base activa."""
 from contextlib import contextmanager
 import argparse
 import json

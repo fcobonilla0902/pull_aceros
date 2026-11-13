@@ -1,4 +1,4 @@
-"""Initial normalized operational schema."""
+"""Esquema operativo inicial normalizado."""
 from alembic import op
 import sqlalchemy as sa
 revision = '0001'

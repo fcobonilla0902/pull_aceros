@@ -1,4 +1,4 @@
-"""Reviewable CSV/XLSX imports; reservations and historical deliveries cannot be overwritten."""
+"""Importaciones revisables de CSV/XLSX; las reservas y las entregas históricas no se pueden sobrescribir."""
 import csv
 import hashlib
 import io

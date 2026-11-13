@@ -1,0 +1,51 @@
+{
+  "fecha": "13/11/2026",
+  "documentos": [
+    {
+      "file": "Manual_Tecnico_MetaRide.docx",
+      "figures": 5,
+      "images": [
+        "arquitectura.png",
+        "relaciones.png",
+        "flujo_simulacion.png",
+        "17_simulacion.png",
+        "16_respaldos.png"
+      ]
+    },
+    {
+      "file": "Manual_Usuario_MetaRide.docx",
+      "figures": 23,
+      "images": [
+        "01_inicio_sesion.png",
+        "02_resumen.png",
+        "03_kanban.png",
+        "04_kanban_entregas.png",
+        "05_nueva_solicitud.png",
+        "08_detalle_asignacion.png",
+        "10_entrega_parcial.png",
+        "11_incidencia.png",
+        "09_edicion_solicitud.png",
+        "06_inventario.png",
+        "23_registro_rollo.png",
+        "07_importacion.png",
+        "12_cambio_turno.png",
+        "21_recepcion_turno.png",
+        "22_turno_aceptado.png",
+        "13_historial.png",
+        "14_administracion_usuarios.png",
+        "15_administracion_catalogos.png",
+        "16_respaldos.png",
+        "17_simulacion.png",
+        "18_simulacion_opciones.png",
+        "19_simulacion_comparacion.png",
+        "20_mi_cuenta.png"
+      ]
+    }
+  ],
+  "capturas_reales": 23,
+  "diagramas": 3,
+  "tablas_aplicacion": 19,
+  "operaciones_api": 34,
+  "verificacion_inicial": "ZIP íntegro; apertura con python-docx; imágenes internas; sin enlaces externos de imágenes.",
+  "pendiente": "Apertura y paginación con Microsoft Word."
+}

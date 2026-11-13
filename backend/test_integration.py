@@ -1,4 +1,4 @@
-"""Integration tests use a temporary SQLite file, real migrations and real sessions."""
+"""Las pruebas de integración utilizan un archivo temporal de SQLite, migraciones reales y sesiones reales."""
 import os
 import tempfile
 import unittest
@@ -72,6 +72,9 @@ class OperationalIntegration(unittest.TestCase):
         self.action(r,'deliver',422)
         r=self.action(r,'deliver',receiver='Supervisor Producción');self.assertEqual(r['state'],'Entregado')
         self.assertEqual(r['items'][0]['delivered'],1)
+        delivery_event=next(e for e in r['events'] if e['action']=='deliver')
+        self.assertIn('Cantidad: 1 | Rollos: ROLL-A',delivery_event['detail'])
+        self.assertFalse(delivery_event['detail'].startswith(' |'))
         self.action(r,'cancel',409,notes='No puede cancelar una entrega')
         with Session() as db:
             self.assertEqual(db.get(Request,r['id']).receiver,'Supervisor Producción')
@@ -94,6 +97,8 @@ class OperationalIntegration(unittest.TestCase):
         first=r['rolls'][0]['id']
         r=self.action(r,'deliver',receiver='Receiver A',roll_ids=[first])
         self.assertEqual(r['state'],'Entrega parcial');self.assertEqual(r['items'][0]['delivered'],1)
+        first_code=next(roll['code'] for roll in r['rolls'] if roll['id']==first)
+        self.assertIn('Cantidad: 1 | Rollos: '+first_code,r['events'][-1]['detail'])
         self.action(r,'deliver',422,receiver='Receiver A',roll_ids=[first])
         r=self.action(r,'deliver',receiver='Receiver B')
         self.assertEqual(r['state'],'Entregado');self.assertEqual(r['items'][0]['delivered'],2)
@@ -174,7 +179,7 @@ class OperationalIntegration(unittest.TestCase):
         export=self.client.get('/api/metrics/export');self.assertEqual(export.status_code,200)
         self.assertIn('movimientos',export.text)
         total_movements=sum(x['movements'] for x in after['movements_by_shift'])
-        self.assertEqual(total_movements,3)  # One complete + two partial-delivery confirmations.
+        self.assertEqual(total_movements,3)  # Una confirmación de entrega completa y dos de entrega parcial.
     def test_08_extended_simulation_contract(self):
         params=Params(solicitudes=4,operadores=4,montacargas=4,turno_minutos=60,localizacion_min=3,localizacion_max=3,preparacion_min=4,preparacion_max=4,traslado_min=5,traslado_max=5,probabilidad_incidencia=100,incidencia_min=2,incidencia_max=2,tiempo_requerido_min=10,tolerancia_paro_min=3,distribucion='triangular')
         result=una_corrida(params,10)

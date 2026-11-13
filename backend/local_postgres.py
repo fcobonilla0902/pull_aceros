@@ -1,4 +1,4 @@
-"""Project-local PostgreSQL lifecycle. No Docker, global service, or default passwords."""
+"""Gestión de PostgreSQL local del proyecto, sin Docker, servicio global ni contraseñas predeterminadas."""
 import argparse
 import json
 import os
@@ -17,7 +17,7 @@ CREDS=DIRECTORY/'credentials.json'
 def run_tool(name,*args,check=True):
     executable=POSTGRES_BIN/(name+('.exe' if os.name=='nt' else ''))
     if not executable.is_file():raise RuntimeError(f'No se encuentra {name} en PG_BIN. Instala PostgreSQL o configura su carpeta bin.')
-    # A Windows postmaster may inherit pipe handles; use a file so pg_ctl can detach cleanly.
+    # El proceso principal de PostgreSQL en Windows puede heredar identificadores de tuberías; utiliza un archivo para que pg_ctl pueda desvincularse correctamente.
     with tempfile.TemporaryFile() as output:
         process=subprocess.run([str(executable),*map(str,args)],stdout=output,stderr=output,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
         output.seek(0);message=output.read().decode('utf-8',errors='replace')
@@ -86,11 +86,11 @@ def setup():
     return {'engine':'postgresql','host':'127.0.0.1','port':config['port'],'database':config['database'],'user':config['app_user']}
 
 def write_active_config():
-    """Called only after migration has verified the copied rows."""
+    """Se llama solo después de que la migración haya verificado las filas copiadas."""
     from dotenv import dotenv_values
     values=dict(dotenv_values(ROOT/'.env')) if (ROOT/'.env').exists() else {}
     values.update(DATABASE_URL=database_url().render_as_string(hide_password=False),PG_BIN=POSTGRES_BIN.as_posix(),PG_LOCAL_AUTOSTART='true')
-    lines=['# Private local configuration. Excluded from Git.']
+    lines=['# Configuración local privada. Excluida de Git.']
     for key,value in values.items():
         if value is not None:lines.append(key+'='+json.dumps(str(value),ensure_ascii=False))
     temporary=ROOT/'.env.pending'

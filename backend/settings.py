@@ -1,4 +1,4 @@
-"""Load local configuration only when the caller has not selected another database."""
+"""Carga la configuración local solo cuando quien llama no ha seleccionado otra base de datos."""
 import os
 from pathlib import Path
 from dotenv import load_dotenv

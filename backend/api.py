@@ -4,6 +4,7 @@ import json
 import hashlib
 import secrets
 import os
+import re
 from datetime import timedelta, date
 from fastapi import APIRouter, Depends, HTTPException, Response, Request as HTTPRequest
 from fastapi.responses import StreamingResponse
@@ -23,16 +24,29 @@ def get_or_404(db, model, id):
     return obj
 def serialize(row):
     return {c.name: getattr(row,c.name) for c in row.__table__.columns if c.name != 'password_hash'}
+
+def delivery_detail(notes, receiver, codes):
+    return ' | '.join(filter(None, [notes.strip(), 'Recibe: '+receiver,
+        'Cantidad: '+str(len(codes)), 'Rollos: '+', '.join(codes)]))
+
+def audit_detail(db, event):
+    # Presenta las entregas antiguas con códigos sin modificar la bitácora guardada.
+    if event.action != 'deliver': return event.detail
+    match = re.fullmatch(r'(.*?) \| Recibe: (.*?) \| Rollos: (\d+(?:,\d+)*)', event.detail, re.DOTALL)
+    if not match: return event.detail
+    ids = [int(value) for value in match[3].split(',')]
+    codes = dict(db.execute(select(Roll.id, Roll.code).where(Roll.id.in_(ids), Roll.request_id==event.request_id)).all())
+    return delivery_detail(match[1], match[2], [codes.get(id, f'ID {id} (código no disponible)') for id in ids])
 @router.post('/auth/login')
 def login(data: Login, response: Response, request: HTTPRequest, db=Depends(db_session, scope='function')):
-    # Failed attempts are persisted; limit both account and source over a sliding window.
+    # Los intentos fallidos se guardan; limita tanto la cuenta como el origen dentro de una ventana móvil.
     source = request.client.host if request.client else 'unknown'
     failures = db.scalar(select(func.count(Audit.id)).where(Audit.action == 'login_failed', Audit.created_at > now()-timedelta(minutes=15), or_(Audit.detail == source, Audit.detail == data.username)))
     if failures and failures >= 10: fail('Demasiados intentos. Espera 15 minutos.',429)
     user = db.scalar(select(User).where(User.username == data.username))
     valid = verify(data.password, user.password_hash) if user else verify(data.password, '0'*32 + ':' + '0'*128)
     if not user or not user.active or not valid:
-        # Authentication failures must survive the exception rollback.
+        # Los fallos de autenticación deben conservarse al revertir la transacción por una excepción.
         admin = db.scalar(select(User.id))
         db.add(Audit(user_id=admin, action='login_failed', detail=source)); db.add(Audit(user_id=admin, action='login_failed', detail=data.username)); db.commit()
         fail('Credenciales incorrectas',401)
@@ -101,7 +115,7 @@ def request_data(db,r):
         stock=db.scalar(select(func.count(Roll.id)).join(Location).join(Part).where(Roll.part_id==i.part_id,Roll.status=='DISP',Roll.kg>500,Location.active==True,Part.active==True))
         items.append({'part':db.get(Part,i.part_id).code,'part_id':i.part_id,'preferred_roll_id':i.preferred_roll_id,'requested':i.quantity,'delivered':delivered,'stock':stock})
     events=list(db.scalars(select(Audit).where(Audit.request_id==r.id).order_by(Audit.id)))
-    return serialize(r)|{'folio':f'REQ-{r.id:06d}','enn':db.get(Press,r.press_id).name,'process':db.get(Process,r.process_id).name,'owner':db.get(User,r.operator_id).username if r.operator_id else 'Sin asignar','requester':db.get(User,r.requester_id).username,'items':items,'rolls':[serialize(x)|{'location':db.get(Location,x.location_id).code} for x in db.scalars(select(Roll).where(Roll.request_id==r.id))],'incidents':[serialize(x) for x in db.scalars(select(Incident).where(Incident.request_id==r.id))], 'updated_at':events[-1].created_at if events else r.created_at, 'events':[serialize(e)|{'username':db.get(User,e.user_id).username} for e in events], 'remaining_minutes':round((r.required_at-now()).total_seconds()/60,1), 'shift':shift_at(r.created_at)['shift']}
+    return serialize(r)|{'folio':f'REQ-{r.id:06d}','enn':db.get(Press,r.press_id).name,'process':db.get(Process,r.process_id).name,'owner':db.get(User,r.operator_id).username if r.operator_id else 'Sin asignar','requester':db.get(User,r.requester_id).username,'items':items,'rolls':[serialize(x)|{'location':db.get(Location,x.location_id).code} for x in db.scalars(select(Roll).where(Roll.request_id==r.id))],'incidents':[serialize(x) for x in db.scalars(select(Incident).where(Incident.request_id==r.id))], 'updated_at':events[-1].created_at if events else r.created_at, 'events':[serialize(e)|{'username':db.get(User,e.user_id).username, 'detail':audit_detail(db,e)} for e in events], 'remaining_minutes':round((r.required_at-now()).total_seconds()/60,1), 'shift':shift_at(r.created_at)['shift']}
 @router.get('/requests')
 def requests(user=Depends(current_user),db=Depends(db_session, scope='function')):
     return [request_data(db,r) for r in db.scalars(select(Request).order_by(Request.id.desc()))]
@@ -115,7 +129,7 @@ def create_request(data:RequestInput,user=Depends(require('request')),db=Depends
     active_catalog(db,Press,data.press_id);active_catalog(db,Process,data.process_id)
     validate_items(db,data.items)
     if data.required_at<now(): fail('La hora requerida debe estar en el futuro',422)
-    # A matching open requirement is likely an accidental duplicate.
+    # Un requerimiento abierto coincidente probablemente sea un duplicado accidental.
     for old in db.scalars(select(Request).where(Request.press_id==data.press_id,Request.process_id==data.process_id,Request.required_at==data.required_at,Request.state.notin_(['Entregado','Cancelado']))):
         if sorted((i.part_id,i.quantity) for i in old.items)==sorted((i.part_id,i.quantity) for i in data.items): fail('Ya existe una solicitud activa idéntica')
     r=Request(**data.model_dump(exclude={'items'}),requester_id=user.id,items=[RequestItem(**i.model_dump()) for i in data.items]); db.add(r)
@@ -141,7 +155,7 @@ def action(id:int,data:ActionInput,user=Depends(require('operate')),db=Depends(d
     elif a=='assign':
         if r.state!='Validado': fail('Primero valida existencia y especificación')
         if data.operator_id is None: fail("Selecciona un operador",422)
-        # Lock the operator row before checking active assignments on PostgreSQL.
+        # Bloquea la fila del operador antes de comprobar las asignaciones activas en PostgreSQL.
         operator=db.scalar(select(User).where(User.id==data.operator_id).with_for_update())
         if not operator:fail('Operador inexistente',404)
         db.refresh(operator)
@@ -169,7 +183,8 @@ def action(id:int,data:ActionInput,user=Depends(require('operate')),db=Depends(d
                 if r.forklift_id:
                     lift=db.get(Forklift,r.forklift_id);lift.available=True;lift.version+=1
             else: target[a]='Entrega parcial'
-            data.notes = data.notes + ' | Recibe: '+data.receiver+' | Rollos: '+','.join(map(str,sorted(selected)))
+            codes = [roll.code for roll in sorted(reserved, key=lambda roll: roll.id) if roll.id in selected]
+            data.notes = delivery_detail(data.notes, data.receiver, codes)
         r.state=target[a]
     elif a=='incident':
         if r.state=='Con incidencia': fail('Resuelve primero la incidencia abierta')
@@ -195,7 +210,7 @@ def action(id:int,data:ActionInput,user=Depends(require('operate')),db=Depends(d
     return request_data(db,r)
 @router.get('/history')
 def history(user=Depends(current_user),db=Depends(db_session, scope='function')):
-    return [serialize(a)|{'username':db.get(User,a.user_id).username} for a in db.scalars(select(Audit).order_by(Audit.id.desc()).limit(2000))]
+    return [serialize(a)|{'username':db.get(User,a.user_id).username, 'detail':audit_detail(db,a)} for a in db.scalars(select(Audit).order_by(Audit.id.desc()).limit(2000))]
 @router.get('/history/export')
 def export(user=Depends(current_user),db=Depends(db_session, scope='function')):
     buffer=io.StringIO(); writer=csv.writer(buffer); writer.writerow(['fecha_utc','usuario','solicitud','accion','detalle'])
@@ -203,7 +218,7 @@ def export(user=Depends(current_user),db=Depends(db_session, scope='function')):
         s=str(value or '')
         return "'"+s if s.lstrip().startswith(('=','+','-','@')) else s
     for a in db.scalars(select(Audit).order_by(Audit.id)):
-        writer.writerow([safe(a.created_at),safe(db.get(User,a.user_id).username),a.request_id,safe(a.action),safe(a.detail)])
+        writer.writerow([safe(a.created_at),safe(db.get(User,a.user_id).username),a.request_id,safe(a.action),safe(audit_detail(db,a))])
     return StreamingResponse(iter(['\ufeff'+buffer.getvalue()]),media_type='text/csv; charset=utf-8',headers={'Content-Disposition':'attachment; filename=historial.csv'})
 def handover_data(db, row):
     return serialize(row)|{'sender':db.get(User,row.user_id).username,'recipient':db.get(User,row.receiving_user_id).username if row.receiving_user_id else None,'accepted_by':db.get(User,row.accepted_by_id).username if row.accepted_by_id else None,'items':[{'request_id':i.request_id,'snapshot':json.loads(i.snapshot)} for i in db.scalars(select(HandoverItem).where(HandoverItem.handover_id==row.id))]}
@@ -283,7 +298,7 @@ def calibration(user=Depends(require('simulate')),db=Depends(db_session, scope='
     samples={'preparacion':[],'traslado':[]}
     for r in db.scalars(select(Request).where(Request.state=='Entregado')):
         events=list(db.scalars(select(Audit).where(Audit.request_id==r.id).order_by(Audit.id)))
-        # Incidents invalidate service-time estimates until pause times are modeled explicitly.
+        # Los incidentes invalidan las estimaciones del tiempo de servicio hasta que se modelen explícitamente las pausas.
         if any(a.action=='incident' for a in events): continue
         timestamps={a.action:a.created_at for a in events}
         for name,start,end in [('preparacion','prepare','ready'),('traslado','transport','deliver')]:

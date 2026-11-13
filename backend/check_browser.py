@@ -1,7 +1,7 @@
-"""Headless Chrome smoke test; temporary database, isolated browser profile, no npm additions.
+"""Prueba básica con Chrome sin interfaz gráfica; base de datos temporal y perfil de navegador aislado, sin añadir paquetes de npm.
 
-Run from the repo root: backend/.venv/Scripts/python.exe backend/check_browser.py
-Uses websockets already supplied by uvicorn[standard]. Requires Chrome on Windows.
+Ejecuta desde la raíz del repositorio: backend/.venv/Scripts/python.exe backend/check_browser.py
+Utiliza websockets, ya incluido en uvicorn[standard]. Requiere Chrome en Windows.
 """
 import asyncio
 import base64
@@ -100,7 +100,7 @@ async def scenario(password,recipient,inventory_file):
         print('Chrome: usuario editado e inventario importado',flush=True)
         await cdp.click('Nueva solicitud')
         await cdp.until("Boolean(document.querySelector('select[name=press_id]'))")
-        # Trigger native change events for select and uncontrolled input fields.
+        # Dispara los eventos nativos de cambio en los selectores y los campos de entrada no controlados.
         await cdp.evaluate("document.querySelector('select[name=press_id]').value='1';document.querySelector('select[name=process_id]').value='1';document.querySelector('input[name=destination]').value='DANLY - recepción';document.querySelector('input[name=required_at]').value='2099-01-01T12:00'")
         await cdp.evaluate("(()=>{let s=[...document.querySelectorAll('select')].find(s=>s.options[0].text.includes('Número de parte'));s.value='1';s.dispatchEvent(new Event('change',{bubbles:true}));})()")
         await cdp.click('Crear solicitud')
@@ -152,7 +152,7 @@ async def scenario(password,recipient,inventory_file):
         await cdp.until("Boolean(document.querySelector('[aria-label^=\"Distribución de\"] svg path'))")
         positions=await cdp.evaluate("(()=>{let a=document.querySelector('[data-testid=dashboard-filter]').getBoundingClientRect();let b=document.querySelector('[data-testid=dashboard-export]').getBoundingClientRect();return {a:a.bottom,b:b.bottom,ah:a.height,bh:b.height};})()")
         assert abs(positions['a']-positions['b'])<=1 and abs(positions['ah']-positions['bh'])<=1,positions
-        await asyncio.sleep(.25)  # Allow the navigation color transition to finish before capture.
+        await asyncio.sleep(.25)  # Espera a que termine la transición de color de la navegación antes de capturar.
         artifacts=ROOT/'artifacts';artifacts.mkdir(exist_ok=True)
         screenshot=await cdp.call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':True})
         (artifacts/'resumen-browser.png').write_bytes(base64.b64decode(screenshot['data']))

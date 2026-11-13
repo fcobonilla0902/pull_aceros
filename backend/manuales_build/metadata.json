@@ -1,0 +1,1558 @@
+{
+  "tables": [
+    {
+      "name": "forklifts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "code",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "available",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "locations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "code",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "parts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "code",
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "specification",
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "permissions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "name": "presses",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "processes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "name": "role_permissions",
+      "columns": [
+        {
+          "name": "role_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [
+            "roles.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "permission_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [
+            "permissions.id"
+          ],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "username",
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "password_hash",
+          "type": "VARCHAR(256)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "role_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "roles.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "handovers",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "incoming_shift",
+          "type": "VARCHAR(8)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "receiving_user_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "accepted_by_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "accepted_at",
+          "type": "DATETIME",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "acceptance_notes",
+          "type": "TEXT",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "pending",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "inventory_imports",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "token_digest",
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "filename",
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "payload",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "update_existing",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "expires_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "committed_at",
+          "type": "DATETIME",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "requests",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "key",
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "press_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "presses.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "process_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "processes.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "requester_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "operator_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "forklift_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "forklifts.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "priority",
+          "type": "VARCHAR(20)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "state",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "required_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "delivered_at",
+          "type": "DATETIME",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "receiver",
+          "type": "VARCHAR(100)",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "destination",
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "risk",
+          "type": "VARCHAR(30)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "sessions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "digest",
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "expires",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "simulation_runs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "parameters",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "result",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "audit",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "requests.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "users.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "action",
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "detail",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "handover_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "handover_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "handovers.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "requests.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "snapshot",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "incidents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "requests.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "cause",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "production_stopped",
+          "type": "BOOLEAN",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "previous_state",
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "created_at",
+          "type": "DATETIME",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "resolved_at",
+          "type": "DATETIME",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "resolution",
+          "type": "TEXT",
+          "nullable": true,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "rolls",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "code",
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": true
+        },
+        {
+          "name": "part_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "parts.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "location_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "locations.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "kg",
+          "type": "FLOAT",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(20)",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "requests.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    },
+    {
+      "name": "request_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": true,
+          "fk": [],
+          "unique": false
+        },
+        {
+          "name": "request_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "requests.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "part_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [
+            "parts.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "preferred_roll_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "pk": false,
+          "fk": [
+            "rolls.id"
+          ],
+          "unique": false
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "nullable": false,
+          "pk": false,
+          "fk": [],
+          "unique": false
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/api/auth/login",
+      "methods": [
+        "POST"
+      ],
+      "name": "Login",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/me",
+      "methods": [
+        "GET"
+      ],
+      "name": "Me",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/logout",
+      "methods": [
+        "POST"
+      ],
+      "name": "Logout",
+      "status": 200
+    },
+    {
+      "path": "/api/catalogs",
+      "methods": [
+        "GET"
+      ],
+      "name": "Catalogs",
+      "status": 200
+    },
+    {
+      "path": "/api/catalogs/{kind}",
+      "methods": [
+        "POST"
+      ],
+      "name": "Add Catalog",
+      "status": 201
+    },
+    {
+      "path": "/api/users",
+      "methods": [
+        "GET"
+      ],
+      "name": "Users",
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "methods": [
+        "POST"
+      ],
+      "name": "Add User",
+      "status": 201
+    },
+    {
+      "path": "/api/inventory",
+      "methods": [
+        "GET"
+      ],
+      "name": "Inventory",
+      "status": 200
+    },
+    {
+      "path": "/api/inventory",
+      "methods": [
+        "POST"
+      ],
+      "name": "Add Roll",
+      "status": 201
+    },
+    {
+      "path": "/api/requests",
+      "methods": [
+        "GET"
+      ],
+      "name": "Requests",
+      "status": 200
+    },
+    {
+      "path": "/api/requests",
+      "methods": [
+        "POST"
+      ],
+      "name": "Create Request",
+      "status": 201
+    },
+    {
+      "path": "/api/requests/{id}/actions",
+      "methods": [
+        "POST"
+      ],
+      "name": "Action",
+      "status": 200
+    },
+    {
+      "path": "/api/history",
+      "methods": [
+        "GET"
+      ],
+      "name": "History",
+      "status": 200
+    },
+    {
+      "path": "/api/history/export",
+      "methods": [
+        "GET"
+      ],
+      "name": "Export",
+      "status": 200
+    },
+    {
+      "path": "/api/handovers",
+      "methods": [
+        "GET"
+      ],
+      "name": "Handovers",
+      "status": 200
+    },
+    {
+      "path": "/api/handovers",
+      "methods": [
+        "POST"
+      ],
+      "name": "Handover",
+      "status": 201
+    },
+    {
+      "path": "/api/handovers/{id}/accept",
+      "methods": [
+        "POST"
+      ],
+      "name": "Accept Handover",
+      "status": 200
+    },
+    {
+      "path": "/api/metrics",
+      "methods": [
+        "GET"
+      ],
+      "name": "Metrics",
+      "status": 200
+    },
+    {
+      "path": "/api/metrics/export",
+      "methods": [
+        "GET"
+      ],
+      "name": "Export Metrics",
+      "status": 200
+    },
+    {
+      "path": "/api/simulations",
+      "methods": [
+        "GET"
+      ],
+      "name": "Simulation History",
+      "status": 200
+    },
+    {
+      "path": "/api/simulations/calibration",
+      "methods": [
+        "GET"
+      ],
+      "name": "Calibration",
+      "status": 200
+    },
+    {
+      "path": "/api/users/{id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "Edit User",
+      "status": 200
+    },
+    {
+      "path": "/api/users/{id}/password",
+      "methods": [
+        "POST"
+      ],
+      "name": "Reset Password",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/password",
+      "methods": [
+        "POST"
+      ],
+      "name": "Change Password",
+      "status": 200
+    },
+    {
+      "path": "/api/catalogs/{kind}/{id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "Edit Catalog",
+      "status": 200
+    },
+    {
+      "path": "/api/requests/{id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "Revise",
+      "status": 200
+    },
+    {
+      "path": "/api/inventory/import/template",
+      "methods": [
+        "GET"
+      ],
+      "name": "Template",
+      "status": 200
+    },
+    {
+      "path": "/api/inventory/import/preview",
+      "methods": [
+        "POST"
+      ],
+      "name": "Preview",
+      "status": 200
+    },
+    {
+      "path": "/api/inventory/import/commit",
+      "methods": [
+        "POST"
+      ],
+      "name": "Commit",
+      "status": 200
+    },
+    {
+      "path": "/api/backups",
+      "methods": [
+        "GET"
+      ],
+      "name": "List Backups",
+      "status": 200
+    },
+    {
+      "path": "/api/backups",
+      "methods": [
+        "POST"
+      ],
+      "name": "Backup",
+      "status": 201
+    },
+    {
+      "path": "/api/backups/{name}",
+      "methods": [
+        "GET"
+      ],
+      "name": "Download",
+      "status": 200
+    },
+    {
+      "path": "/salud",
+      "methods": [
+        "GET"
+      ],
+      "name": "Salud",
+      "status": 200
+    },
+    {
+      "path": "/simular",
+      "methods": [
+        "POST"
+      ],
+      "name": "Simular",
+      "status": 200
+    }
+  ],
+  "backend_versions": {
+    "fastapi": "0.162.0",
+    "uvicorn": "0.54.0",
+    "simpy": "4.1.2",
+    "pydantic": "2.14.2",
+    "SQLAlchemy": "2.1.8",
+    "alembic": "1.20.1",
+    "psycopg": "3.3.8",
+    "openpyxl": "3.1.5",
+    "python-docx": "1.2.0",
+    "playwright": "1.65.1"
+  },
+  "frontend_versions": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vite": "8.3.5",
+    "tailwindcss": "4.3.3",
+    "recharts": "3.10.1",
+    "framer-motion": "14.9.0",
+    "lucide-react": "1.66.0"
+  },
+  "sources": [
+    {
+      "path": "src/AccountPage.jsx",
+      "lines": 16
+    },
+    {
+      "path": "src/AdminPage.jsx",
+      "lines": 91
+    },
+    {
+      "path": "src/api.js",
+      "lines": 18
+    },
+    {
+      "path": "src/App.css",
+      "lines": 184
+    },
+    {
+      "path": "src/App.jsx",
+      "lines": 221
+    },
+    {
+      "path": "src/DashboardCharts.jsx",
+      "lines": 31
+    },
+    {
+      "path": "src/index.css",
+      "lines": 130
+    },
+    {
+      "path": "src/InventoryImport.jsx",
+      "lines": 37
+    },
+    {
+      "path": "src/main.jsx",
+      "lines": 10
+    },
+    {
+      "path": "src/Operations.jsx",
+      "lines": 66
+    },
+    {
+      "path": "src/Reports.jsx",
+      "lines": 101
+    },
+    {
+      "path": "src/RequestEditor.jsx",
+      "lines": 42
+    },
+    {
+      "path": "src/ShiftPage.jsx",
+      "lines": 69
+    },
+    {
+      "path": "src/SimulationPage.jsx",
+      "lines": 266
+    },
+    {
+      "path": "src/lib/time.js",
+      "lines": 12
+    },
+    {
+      "path": "src/lib/utils.js",
+      "lines": 1
+    },
+    {
+      "path": "src/components/ui/badge.jsx",
+      "lines": 48
+    },
+    {
+      "path": "src/components/ui/button.jsx",
+      "lines": 57
+    },
+    {
+      "path": "src/components/ui/card.jsx",
+      "lines": 119
+    },
+    {
+      "path": "src/components/ui/input.jsx",
+      "lines": 22
+    },
+    {
+      "path": "src/components/ui/progress.jsx",
+      "lines": 89
+    },
+    {
+      "path": "backend/alembic.ini",
+      "lines": 5
+    },
+    {
+      "path": "backend/api.py",
+      "lines": 311
+    },
+    {
+      "path": "backend/backups.py",
+      "lines": 214
+    },
+    {
+      "path": "backend/check_browser.py",
+      "lines": 228
+    },
+    {
+      "path": "backend/check_postgres.py",
+      "lines": 44
+    },
+    {
+      "path": "backend/database.py",
+      "lines": 177
+    },
+    {
+      "path": "backend/inventory_import.py",
+      "lines": 173
+    },
+    {
+      "path": "backend/local_postgres.py",
+      "lines": 122
+    },
+    {
+      "path": "backend/main.py",
+      "lines": 40
+    },
+    {
+      "path": "backend/maintenance.py",
+      "lines": 89
+    },
+    {
+      "path": "backend/manage.py",
+      "lines": 22
+    },
+    {
+      "path": "backend/migrate_postgres.py",
+      "lines": 88
+    },
+    {
+      "path": "backend/operations.py",
+      "lines": 22
+    },
+    {
+      "path": "backend/request_revisions.py",
+      "lines": 55
+    },
+    {
+      "path": "backend/reservations.py",
+      "lines": 35
+    },
+    {
+      "path": "backend/run.ps1",
+      "lines": 30
+    },
+    {
+      "path": "backend/schemas.py",
+      "lines": 79
+    },
+    {
+      "path": "backend/security.py",
+      "lines": 65
+    },
+    {
+      "path": "backend/settings.py",
+      "lines": 13
+    },
+    {
+      "path": "backend/setup-postgres.ps1",
+      "lines": 36
+    },
+    {
+      "path": "backend/simulation.py",
+      "lines": 131
+    },
+    {
+      "path": "backend/test_integration.py",
+      "lines": 412
+    },
+    {
+      "path": "backend/test_postgres_concurrency.py",
+      "lines": 112
+    },
+    {
+      "path": "backend/migrations/env.py",
+      "lines": 11
+    },
+    {
+      "path": "backend/migrations/initial_schema.py",
+      "lines": 131
+    },
+    {
+      "path": "backend/migrations/versions/0001_initial.py",
+      "lines": 14
+    },
+    {
+      "path": "backend/migrations/versions/0002_preferred_roll.py",
+      "lines": 15
+    },
+    {
+      "path": "backend/migrations/versions/0003_quantity_constraint.py",
+      "lines": 12
+    },
+    {
+      "path": "backend/migrations/versions/0004_operational_handover.py",
+      "lines": 43
+    },
+    {
+      "path": "backend/migrations/versions/0005_maintenance.py",
+      "lines": 32
+    },
+    {
+      "path": "backend/migrations/versions/0006_active_resources.py",
+      "lines": 15
+    },
+    {
+      "path": "docs/AUDITORIA.md",
+      "lines": 65
+    },
+    {
+      "path": "docs/MANTENIMIENTO_LOCAL.md",
+      "lines": 110
+    },
+    {
+      "path": "docs/POSTGRESQL.md",
+      "lines": 122
+    },
+    {
+      "path": "docs/REQUISITOS_DOCUMENTO.md",
+      "lines": 54
+    }
+  ]
+}

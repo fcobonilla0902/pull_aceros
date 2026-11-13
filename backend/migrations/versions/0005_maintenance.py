@@ -1,4 +1,4 @@
-"""Catalog lifecycle, optimistic concurrency and reviewed inventory imports."""
+"""Gestión del ciclo de vida del catálogo, concurrencia optimista e importaciones de inventario revisadas."""
 from alembic import op
 import sqlalchemy as sa
 revision = '0005'

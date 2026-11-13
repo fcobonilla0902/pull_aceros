@@ -1,4 +1,4 @@
-"""Copy SQLite to an EMPTY PostgreSQL database and verify every row before activation."""
+"""Copia SQLite a una base de datos VACÍA de PostgreSQL y verifica cada fila antes de activarla."""
 import argparse
 from contextlib import closing,nullcontext
 from datetime import datetime,timezone
@@ -34,7 +34,7 @@ def migrate(source,target,activate=False):
     stamp=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+secrets.token_hex(4)
     snapshot=ROOT/'backups'/f'antes-postgresql-{stamp}.db'
     snapshot.parent.mkdir(exist_ok=True)
-    # The active SQLite API must be stopped before the final copy. A trial copy remains online.
+    # La API activa de SQLite debe detenerse antes de la copia final. La copia de prueba permite mantenerla en ejecución.
     with database_guard(source_url) if activate else nullcontext():
         with closing(sqlite3.connect(source)) as origin,closing(sqlite3.connect(snapshot)) as copy,copy:
             origin.backup(copy)

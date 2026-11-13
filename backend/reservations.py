@@ -1,4 +1,4 @@
-"""Transactional material selection shared by validation and request revision."""
+"""Selección transaccional de materiales compartida por la validación y la revisión de solicitudes."""
 from sqlalchemy import select,update
 from database import Roll,Part,Location
 from api import fail

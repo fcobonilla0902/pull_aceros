@@ -1,0 +1,100 @@
+{
+  "capturas": [
+    {
+      "file": "01_inicio_sesion.png",
+      "description": "Inicio de sesión sin credenciales visibles."
+    },
+    {
+      "file": "02_resumen.png",
+      "description": "Resumen con datos de la base de demostración aislada."
+    },
+    {
+      "file": "03_kanban.png",
+      "description": "Kanban: primeras columnas y solicitudes de demostración."
+    },
+    {
+      "file": "04_kanban_entregas.png",
+      "description": "Kanban: incidencias, entregas parciales y estados finales."
+    },
+    {
+      "file": "05_nueva_solicitud.png",
+      "description": "Formulario de solicitud; asignación automática para pedir dos rollos."
+    },
+    {
+      "file": "06_inventario.png",
+      "description": "Inventario físico e importación Excel/CSV."
+    },
+    {
+      "file": "23_registro_rollo.png",
+      "description": "Captura individual de un rollo: código, parte, ubicación y kg."
+    },
+    {
+      "file": "07_importacion.png",
+      "description": "Vista previa real de un CSV; ninguna fila se guarda sin confirmación."
+    },
+    {
+      "file": "08_detalle_asignacion.png",
+      "description": "Detalle del folio, reserva de rollos y asignación de recursos."
+    },
+    {
+      "file": "09_edicion_solicitud.png",
+      "description": "Edición de cantidades y campos con justificación obligatoria."
+    },
+    {
+      "file": "10_entrega_parcial.png",
+      "description": "Entrega parcial: cantidades, responsable y rollos pendientes."
+    },
+    {
+      "file": "11_incidencia.png",
+      "description": "Incidencia tipificada y formulario de resolución."
+    },
+    {
+      "file": "12_cambio_turno.png",
+      "description": "Pendientes activos y entrega al siguiente turno."
+    },
+    {
+      "file": "13_historial.png",
+      "description": "Bitácora con usuario, folio, fecha y detalles de entrega."
+    },
+    {
+      "file": "14_administracion_usuarios.png",
+      "description": "Administración de usuarios y permisos."
+    },
+    {
+      "file": "15_administracion_catalogos.png",
+      "description": "Catálogos, especificaciones y estados de servicio."
+    },
+    {
+      "file": "16_respaldos.png",
+      "description": "Creación de un respaldo PostgreSQL de la base de demostración."
+    },
+    {
+      "file": "17_simulacion.png",
+      "description": "Simulación actual con sus tres indicadores básicos."
+    },
+    {
+      "file": "18_simulacion_opciones.png",
+      "description": "Opciones avanzadas: demanda, duración del turno y regla de atención."
+    },
+    {
+      "file": "19_simulacion_comparacion.png",
+      "description": "Comparación real de uno a cuatro montacargas, manteniendo los demás parámetros."
+    },
+    {
+      "file": "20_mi_cuenta.png",
+      "description": "Cambio de contraseña desde la cuenta autenticada."
+    },
+    {
+      "file": "21_recepcion_turno.png",
+      "description": "Recepción por el destinatario; cuenta distinta de quien entrega."
+    },
+    {
+      "file": "22_turno_aceptado.png",
+      "description": "Evidencia de aceptación con usuario y fecha."
+    }
+  ],
+  "errores_navegador": [],
+  "motor_demo": "postgresql",
+  "aislamiento": "Base PostgreSQL temporal; eliminada al terminar. Sin datos operativos.",
+  "fecha": "2026-11-13T17:10:25.843721"
+}
