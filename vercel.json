@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://pull-aceros-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/simular",
+      "destination": "https://pull-aceros-api.onrender.com/simular"
+    }
+  ]
+}
