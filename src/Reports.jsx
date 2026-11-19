@@ -6,14 +6,14 @@ const DashboardCharts = lazy(() => import('./DashboardCharts'));
 const panel = 'rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm';
 const control = 'inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:opacity-50';
 const groups = [
-  { id: 'pendientes', label: 'Por validar', states: ['Solicitado'], color: '#3b82f6' },
-  { id: 'validadas', label: 'Validadas', states: ['Validado'], color: '#6366f1' },
-  { id: 'preparacion', label: 'En preparación', states: ['Tomado', 'En preparación'], color: '#0891b2' },
-  { id: 'listas', label: 'Listas para traslado', states: ['Listo para traslado'], color: '#8b5cf6' },
-  { id: 'traslado', label: 'En traslado / parcial', states: ['En traslado', 'Entrega parcial'], color: '#f59e0b' },
-  { id: 'incidencias', label: 'Con incidencia', states: ['Con incidencia'], color: '#ef4444' },
-  { id: 'entregadas', label: 'Entregadas', states: ['Entregado'], color: '#10b981' },
-  { id: 'canceladas', label: 'Canceladas', states: ['Cancelado'], color: '#94a3b8' },
+  { id: 'pendientes', label: 'Por validar', states: ['Solicitado'], color: 'var(--status-pending)' },
+  { id: 'validadas', label: 'Validadas', states: ['Validado'], color: 'var(--status-validated)' },
+  { id: 'preparacion', label: 'En preparación', states: ['Tomado', 'En preparación'], color: 'var(--status-preparing)' },
+  { id: 'listas', label: 'Listas para traslado', states: ['Listo para traslado'], color: 'var(--status-ready)' },
+  { id: 'traslado', label: 'En traslado / parcial', states: ['En traslado', 'Entrega parcial'], color: 'var(--status-in-transit)' },
+  { id: 'incidencias', label: 'Con incidencia', states: ['Con incidencia'], color: 'var(--status-incident)' },
+  { id: 'entregadas', label: 'Entregadas', states: ['Entregado'], color: 'var(--status-delivered)' },
+  { id: 'canceladas', label: 'Canceladas', states: ['Cancelado'], color: 'var(--status-cancelled)' },
 ];
 const closed = r => ['Entregado', 'Cancelado'].includes(r.state);
 const number = value => Number(value || 0).toLocaleString('es-MX', { maximumFractionDigits: 1 });
@@ -66,7 +66,7 @@ export default function Reports({ data, onOpenRequest, onNavigate }) {
       <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
         <label className="min-w-0 text-xs font-semibold text-slate-500">Desde<input aria-label="Desde" name="start" type="date" className="mt-1.5 block h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800"/></label>
         <label className="min-w-0 text-xs font-semibold text-slate-500">Hasta<input aria-label="Hasta" name="end" type="date" className="mt-1.5 block h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800"/></label>
-        <button data-testid="dashboard-filter" disabled={busy} className={`${control} bg-blue-600 text-white hover:bg-blue-700`}><Filter size={16}/>{busy ? 'Consultando…' : 'Consultar periodo'}</button>
+        <button data-testid="dashboard-filter" disabled={busy} className={`${control} bg-[var(--dashboard-filter-button)] text-white hover:bg-[var(--dashboard-filter-button-hover)]`}><Filter size={16}/>{busy ? 'Consultando…' : 'Consultar periodo'}</button>
         <button type="reset" disabled={busy} onClick={() => { setReport(null); setPeriod(''); setReportAt(null); setFocus(null); setError(''); }} className={`${control} border border-slate-200 bg-white text-slate-600 hover:bg-slate-50`}><RefreshCw size={16}/>Ver todo</button>
       </div>
       <a data-testid="dashboard-export" className={`${control} border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100`} href={`${API}/api/metrics/export${period ? '?' + period : ''}`}><Download size={16}/>Exportar indicadores CSV</a>

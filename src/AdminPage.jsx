@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, post, API } from './api';
 const panel='space-y-4 rounded-2xl bg-white p-5 shadow-sm';
 const input='w-full rounded-xl border border-slate-200 bg-white p-3 text-sm';
-const button='rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
+const button='rounded-xl bg-[var(--admin-action)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
 const catalogExamples={parts:'Ej. 180553AA',locations:'Ej. ALM-A01',forklifts:'Ej. MC-01',presses:'Ej. DANLY 800',processes:'Ej. Blancos'};
 const kinds=[['parts','Números de parte'],['locations','Ubicaciones'],['forklifts','Montacargas'],['presses','Estampadoras'],['processes','Tipos de proceso']];
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Play, BarChart3, AlertTriangle, LoaderCircle, Truck, Clock3, CheckCircle2, Timer } from "lucide-react";
 
 import { api } from "./api";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const API = import.meta.env.VITE_API_URL || import.meta.env.VITE_SIM_API || "";
 
@@ -24,6 +25,35 @@ const DEFAULTS = {
 
 const fmt = (value) => Number(value ?? 0).toLocaleString("es-MX", { maximumFractionDigits: 2 });
 
+const PRIORITIES = [
+  { key: 'urgente', name: 'Urgente', color: 'var(--simulation-priority-urgent)' },
+  { key: 'alta', name: 'Alta', color: 'var(--simulation-priority-high)' },
+  { key: 'normal', name: 'Normal', color: 'var(--simulation-priority-normal)' },
+];
+
+function PriorityDonut({ row }) {
+  const data = PRIORITIES.map(priority => ({ ...priority, ...row.por_prioridad?.[priority.key] }));
+  const measured = data.filter(item => item.solicitudes > 0);
+  return <article className="min-w-0 rounded-xl border border-slate-200 p-4">
+    <h3 className="text-sm font-bold text-slate-900">{row.montacargas} montacargas</h3>
+    <div className="h-48 min-w-0" role="img" aria-label={`Tiempo promedio de entrega por prioridad con ${row.montacargas} montacargas. ${data.map(item => `${item.name}: ${item.solicitudes ? `${fmt(item.tiempo_total_promedio)} minutos` : 'sin solicitudes'}`).join('. ')}`}>
+      {measured.length ? <ResponsiveContainer width="100%" height="100%" minWidth={0}><PieChart>
+        <Pie data={measured} dataKey="tiempo_total_promedio" nameKey="name" innerRadius={50} outerRadius={72} paddingAngle={3} strokeWidth={0} isAnimationActive={false}>
+          {measured.map(item => <Cell key={item.key} fill={item.color} />)}
+        </Pie>
+        <Tooltip formatter={value => [`${fmt(value)} min`, 'Entrega promedio']} />
+        <text x="50%" y="48%" textAnchor="middle" dominantBaseline="central" fontSize={20} fontWeight={700} fill="var(--simulation-chart-text)">{fmt(row.tiempo_total_promedio)}</text>
+        <text x="50%" y="60%" textAnchor="middle" fontSize={10} fill="var(--simulation-chart-caption)">min · promedio global</text>
+      </PieChart></ResponsiveContainer> : <p className="pt-16 text-center text-xs text-slate-500">Sin solicitudes para calcular tiempos.</p>}
+    </div>
+    <ul className="space-y-2">{data.map(item => <li key={item.key} className="flex items-center gap-2 text-xs">
+      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+      <span className="flex-1 text-slate-600">{item.name}</span>
+      <strong className="text-slate-900">{item.solicitudes ? `${fmt(item.tiempo_total_promedio)} min` : 'Sin solicitudes'}</strong>
+    </li>)}</ul>
+  </article>;
+}
+
 // Tarjeta reutilizable para cada uno de los tres resultados básicos.
 function MetricCard({ icon: Icon, label, value, description }) {
   return (
@@ -33,6 +63,60 @@ function MetricCard({ icon: Icon, label, value, description }) {
       <p className="mt-1 text-xs text-slate-500">{description}</p>
     </div>
   );
+}
+
+const chartCard = "min-w-0 rounded-2xl bg-white p-5 shadow-sm";
+const axisTick = { fontSize: 11, fill: "var(--simulation-chart-ticks)" };
+const replicaLabel = (value) => `Ejecución ${value}`;
+
+function TimeChart({ runs, metric, title, average, color }) {
+  return <figure className={chartCard}>
+    <figcaption className="font-bold text-slate-900">{title}</figcaption>
+    <p className="mt-1 text-xs text-slate-600">Línea punteada · promedio general de {fmt(average)} min</p>
+    <div className="mt-3 h-56 min-w-0">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <LineChart data={runs} margin={{ top: 8, right: 12, bottom: 6, left: 0 }}>
+          <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+          <XAxis dataKey="replica" tick={axisTick} tickLine={false} />
+          <YAxis width={56} unit=" min" tick={axisTick} tickLine={false} />
+          <Tooltip labelFormatter={replicaLabel} formatter={value => [`${fmt(value)} min`, 'Promedio de la ejecución']} />
+          <ReferenceLine y={average} stroke={color} strokeDasharray="5 4" />
+          <Line name={title} dataKey={metric} stroke={color} strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </figure>;
+}
+
+function SimulationCharts({ result }) {
+  const { corridas, resumen, parametros } = result;
+  const deliveries = corridas.map(run => ({
+    ...run,
+    entregas_despues: parametros.solicitudes - run.entregas_en_turno,
+  }));
+
+  return <section className="grid min-w-0 gap-4 sm:grid-cols-2" aria-label="Gráficas de la simulación por ejecución">
+    <TimeChart runs={corridas} metric="tiempo_total_promedio" title="Tiempo promedio de entrega" average={resumen.tiempo_total_promedio} color="var(--simulation-delivery-time)" />
+    <TimeChart runs={corridas} metric="espera_promedio" title="Tiempo promedio de espera" average={resumen.espera_promedio} color="var(--simulation-wait-time)" />
+    <figure className={`${chartCard} sm:col-span-2`}>
+      <figcaption className="font-bold text-slate-900">Entregas dentro del turno</figcaption>
+      <p className="mt-1 text-xs text-slate-600">En promedio, el {fmt(resumen.porcentaje_en_turno)}% de las solicitudes se entregó dentro del turno.</p>
+      <div className="mt-3 h-64 min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <BarChart data={deliveries} margin={{ top: 8, right: 12, bottom: 6, left: 0 }}>
+            <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+            <XAxis dataKey="replica" tick={axisTick} tickLine={false} />
+            <YAxis width={48} allowDecimals={false} domain={[0, parametros.solicitudes]} tick={axisTick} tickLine={false} />
+            <Tooltip labelFormatter={replicaLabel} formatter={(value, name) => [`${fmt(value)} solicitudes`, name]} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Bar name="Dentro del turno" dataKey="entregas_en_turno" stackId="deliveries" fill="var(--simulation-in-shift)" maxBarSize={40} isAnimationActive={false} />
+            <Bar name="Después del turno" dataKey="entregas_despues" stackId="deliveries" fill="var(--simulation-after-shift)" maxBarSize={40} isAnimationActive={false} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </figure>
+    <p className="text-xs text-slate-500 sm:col-span-2">El eje horizontal indica el número de ejecución. Selecciona un punto o una barra para consultar sus valores.</p>
+  </section>;
 }
 
 // La longitud de cada barra representa la espera media del escenario.
@@ -60,7 +144,7 @@ export default function SimulationPage() {
   const [solicitudes, setSolicitudes] = useState(50);
   const [montacargas, setMontacargas] = useState(2);
   const [operadores, setOperadores] = useState(3);
-  const [demanda, setDemanda] = useState("normal");
+  const [demanda, setDemanda] = useState("urgente");
   const [result, setResult] = useState(null);
   const [comparison, setComparison] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -76,6 +160,7 @@ export default function SimulationPage() {
     montacargas,
     operadores,
     porcentaje_urgentes: demanda === "urgente" ? 25 : 0,
+    porcentaje_altas: demanda === "urgente" ? 25 : 0,
     prioridad: rule === 'auto' ? (demanda === "urgente" ? "urgentes" : "llegada") : rule,
   };
 
@@ -124,6 +209,7 @@ export default function SimulationPage() {
         );
         setComparison(responses.map((response, index) => ({
           montacargas: index + 1,
+          por_prioridad: response.por_prioridad,
           ...response.resumen,
         })));
       } else {
@@ -177,8 +263,8 @@ export default function SimulationPage() {
 
           <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
             Turno de {params.turno_minutos} min. Preparación: {params.preparacion_min}–{params.preparacion_max} min; traslado: {params.traslado_min}–{params.traslado_max} min.
-            {params.porcentaje_urgentes > 0 ? " El 25% de las solicitudes será urgente." : " Sin solicitudes urgentes."}
-            {params.prioridad === "urgentes" ? " Se atienden primero las urgentes." : " Se atiende por orden de llegada."}
+            {params.porcentaje_urgentes > 0 ? " Mezcla esperada: 25% urgente, 25% alta y 50% normal." : " Todas las solicitudes son normales."}
+            {params.prioridad === "urgentes" ? " Se atienden primero urgentes, después altas y normales." : " Se atiende por orden de llegada."}
             {" Se repite 10 veces y se muestra el promedio. Son escenarios simulados."}
           </p>
 
@@ -186,7 +272,7 @@ export default function SimulationPage() {
             type="button"
             disabled={loading}
             onClick={() => run(false)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 p-3 font-bold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--simulation-run-button)] p-3 font-bold text-white hover:bg-[var(--simulation-run-button-hover)] disabled:opacity-60"
           >
             {loading ? <LoaderCircle className="animate-spin" size={18} /> : <Play size={18} />}
             Ejecutar simulación
@@ -209,7 +295,7 @@ export default function SimulationPage() {
                 className="w-full rounded-lg border border-slate-200 bg-white p-2.5 text-sm text-slate-900"
               >
                 <option value="normal">Normal</option>
-                <option value="urgente">Con urgencias</option>
+                <option value="urgente">Urgentes, altas y normales</option>
               </select>
             </label>
             <label className="block text-xs font-semibold text-slate-600">Duración del turno (min)
@@ -221,7 +307,7 @@ export default function SimulationPage() {
           </details>
         </section>
 
-        <section className="space-y-4">
+          <section className="min-w-0 space-y-4">
           {error && (
             <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
               <AlertTriangle size={18} className="shrink-0" /> {error}
@@ -243,9 +329,9 @@ export default function SimulationPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <MetricCard icon={Clock3} label="Tiempo promedio de entrega" value={`${fmt(summary.tiempo_total_promedio)} min`} description="Desde la solicitud hasta la entrega" />
                 <MetricCard icon={Timer} label="Tiempo promedio de espera" value={`${fmt(summary.espera_promedio)} min`} description="Tiempo esperando recursos disponibles" />
-                <MetricCard icon={CheckCircle2} label="Entregas dentro del turno" value={fmt(summary.entregas_en_turno)} description={`De ${result.parametros.solicitudes} solicitudes en un turno de ${fmt(result.parametros.turno_minutos / 60)} horas; promedio de 10 ejecuciones`} />
+                <MetricCard icon={CheckCircle2} label="Entregas dentro del turno" value={fmt(summary.entregas_en_turno)} description={`De ${result.parametros.solicitudes} solicitudes por turno de ${fmt(result.parametros.turno_minutos / 60)} horas, en promedio`} />
               </div>
-              <p className="text-xs text-slate-500">Los resultados corresponden al escenario simulado.</p>
+              <SimulationCharts result={result} />
             </>
           )}
 
@@ -257,6 +343,13 @@ export default function SimulationPage() {
               {comparison.map((row) => <ComparisonBar key={row.label || row.montacargas} row={row} max={maxWait} />)}
             </div>
           )}
+
+          {comparison.some(row => row.por_prioridad) && <section className="min-w-0 space-y-4 rounded-2xl bg-white p-5 shadow-sm">
+            <h2 className="font-bold text-slate-900">Tiempo de entrega por prioridad</h2>
+            <p className="text-sm text-slate-600">Tiempo promedio desde la solicitud hasta la entrega, incluyendo espera y servicio, para cada cantidad de montacargas. Los operadores se mantienen fijos.</p>
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">{comparison.map(row => <PriorityDonut key={row.montacargas} row={row} />)}</div>
+            <p className="text-xs text-slate-500">Cada segmento representa los minutos promedio de su prioridad; no representa el porcentaje de pedidos. El centro muestra el promedio global ponderado por solicitudes. Se incluyen todas las solicitudes de las 10 ejecuciones, incluso las entregadas después del turno. Una prioridad sin solicitudes se indica sin asignarle un tiempo.</p>
+          </section>}
 
           {history.length>0 && <details className="rounded-2xl bg-white p-5 shadow-sm"><summary className="cursor-pointer text-sm font-semibold">Ver simulaciones anteriores</summary>{history.slice(0,10).map(h=><p key={h.id} className="border-t py-2 text-xs text-slate-600">{new Date(h.created_at+'Z').toLocaleString('es-MX')} · {h.parameters.solicitudes} solicitudes · {h.parameters.montacargas} montacargas · {fmt(h.summary.espera_promedio)} min de espera</p>)}</details>}
         </section>

@@ -334,6 +334,69 @@ class OperationalIntegration(unittest.TestCase):
         self.assertEqual(self.client.post('/api/inventory/import/preview',files={'file':('formula.xlsx',buffer.getvalue(),'application/octet-stream')}).status_code,422)
         self.assertEqual(self.client.post('/api/inventory/import/preview',files={'file':('broken.xlsx',b'broken','application/octet-stream')}).status_code,422)
         self.assertEqual(self.client.get('/api/inventory/import/template').status_code,200)
+    def test_stock_workbook_imports_all_columns(self):
+        from io import BytesIO
+        from openpyxl import load_workbook
+
+        template = self.client.get('/api/inventory/import/template?layout=stock')
+        self.assertEqual(template.status_code, 200)
+        book = load_workbook(BytesIO(template.content))
+        sheet = book.active
+        self.assertEqual(sheet.max_column, 17)
+        sheet['A1'] = 'Número de artículo'
+        sheet['G1'] = 'Planta de almacén'
+        sheet['J1'] = 'Lote / N.º de serie'
+        sheet['L1'] = 'Cantidad de existencias'
+        sheet['M1'] = 'U.M.'
+        sheet['N1'] = 'Fecha de recepción'
+        sheet['N2'] = datetime(2024, 6, 25)
+
+        def preview(unit):
+            sheet['M2'] = unit
+            buffer = BytesIO()
+            book.save(buffer)
+            response = self.client.post('/api/inventory/import/preview', files={
+                'file': ('existencias.xlsx', buffer.getvalue(), 'application/octet-stream'),
+            })
+            self.assertEqual(response.status_code, 200, response.text)
+            return response.json()
+
+        self.assertFalse(preview('PZ')['valid'])
+        sheet['M2'] = 'KG'
+        original = [cell.value for cell in sheet[2]]
+        other_location = original.copy()
+        other_location[7] = '1602OB'
+        sheet.append(other_location)
+        sheet.append(original)
+        result = preview('KG')
+        self.assertTrue(result['valid'], result)
+        self.assertTrue(result['source_layout'])
+        self.assertEqual((result['creates'], result['duplicates']), (2, 1))
+        self.assertEqual(result['sample'][0]['kg'], 3731)
+        self.assertEqual(result['sample'][0]['source_data']['Fcha Recepcn'], '25/06/2024')
+        self.assertEqual(result['sample'][0]['source_data']['Planta'], '100215')
+        self.assertFalse(any(p['code'] == '03003AA' for p in self.client.get('/api/catalogs').json()['parts']))
+        response = self.client.post('/api/inventory/import/commit', json={'token': result['token']})
+        self.assertEqual(response.status_code, 200, response.text)
+        roll = next(r for r in self.client.get('/api/inventory').json() if r['code'] == 'AX0196040005')
+        self.assertEqual((roll['part'], roll['location'], roll['kg']), ('03003AA', '1601OB', 3731))
+        self.assertEqual(roll['source_data'], result['sample'][0]['source_data'])
+        same_lot = [r for r in self.client.get('/api/inventory').json() if (r['source_data'] or {}).get('Lote/Serie') == 'AX0196040005']
+        self.assertEqual({r['location'] for r in same_lot}, {'1601OB', '1602OB'})
+        self.assertEqual(len({r['code'] for r in same_lot}), 2)
+
+        sheet.delete_rows(2, 3)
+        sheet.append(other_location)
+        sheet.append(original)
+        buffer = BytesIO()
+        book.save(buffer)
+        book.close()
+        response = self.client.post('/api/inventory/import/preview', files={
+            'file': ('existencias.xlsx', buffer.getvalue(), 'application/octet-stream'),
+        }, data={'update_existing': 'true'})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()['unchanged'], 2, response.text)
+
     @unittest.skipIf(engine.dialect.name!='sqlite','Covered by the PostgreSQL dump/restore test')
     def test_16_backup_and_offline_restore(self):
         import json,sqlite3,subprocess,sys

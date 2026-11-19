@@ -3,7 +3,7 @@ import { post } from './api';
 
 const panel = 'space-y-4 rounded-2xl bg-white p-5 shadow-sm';
 const input = 'w-full rounded-xl border border-slate-200 p-3 text-sm';
-const button = 'rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
+const button = 'rounded-xl bg-[var(--shift-action)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
 const local = value => value ? new Date(value + 'Z').toLocaleString('es-MX') : '—';
 
 function Pending({ request, current }) {

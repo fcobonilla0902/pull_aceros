@@ -30,12 +30,15 @@ class Params(BaseModel):
     tolerancia_paro_min: float = Field(30, ge=0, le=1440)
     distribucion: Literal['uniforme','triangular'] = 'uniforme'
     porcentaje_urgentes: int = Field(25, ge=0, le=100)
+    porcentaje_altas: int = Field(0, ge=0, le=100)
     prioridad: Literal['urgentes','llegada'] = 'urgentes'
     semilla: int = Field(42, ge=0, le=100000000)
     replicas: int = Field(10, ge=1, le=100)
 
     @model_validator(mode='after')
     def ranges(self):
+        if self.porcentaje_urgentes + self.porcentaje_altas > 100:
+            raise ValueError('Los porcentajes de urgentes y altas no pueden superar 100')
         # Rechaza intervalos imposibles, como preparación de 12 a 5 minutos.
         for stage in ['localizacion','preparacion','traslado','incidencia']:
             if getattr(self,stage+'_min')>getattr(self,stage+'_max'):
@@ -73,17 +76,19 @@ def una_corrida(p: Params, semilla: int):
     for arrival in arrivals:
         # La urgencia es una probabilidad por solicitud: la proporción exacta
         # puede variar entre ejecuciones, aunque se configure el 25%.
-        urgent=rng.random()<p.porcentaje_urgentes/100
+        draw=rng.random()*100
+        urgency='urgente' if draw<p.porcentaje_urgentes else ('alta' if draw<p.porcentaje_urgentes+p.porcentaje_altas else 'normal')
         locate,prepare,travel=duration('localizacion'),duration('preparacion'),duration('traslado')
         incident=rng.random()<p.probabilidad_incidencia/100
         incident_duration=duration('incidencia') if incident else 0
-        tasks.append((arrival,urgent,locate,prepare,travel,incident,incident_duration))
+        tasks.append((arrival,urgency,locate,prepare,travel,incident,incident_duration))
     # La ocupación cuenta solo los minutos dentro del turno.
     def overlap(start,end): return max(0,min(end,p.turno_minutos)-min(start,p.turno_minutos))
     def attend(index,task):
         nonlocal operator_busy,forklift_busy
-        arrival,urgent,locate,prepare,travel,incident,incident_duration=task
-        priority=0 if p.prioridad=='urgentes' and urgent else 1
+        arrival,urgency,locate,prepare,travel,incident,incident_duration=task
+        urgent=urgency=='urgente'
+        priority={'urgente':0,'alta':1,'normal':2}[urgency] if p.prioridad=='urgentes' else 1
         # Cada proceso comienza en cero y espera hasta su propia llegada.
         yield env.timeout(arrival)
         with operators.request(priority=priority) as op:
@@ -108,6 +113,7 @@ def una_corrida(p: Params, semilla: int):
         # Duración = entrega menos llegada; incluye esperas y servicio.
         # a_tiempo indica entrega antes del cierre del turno.
         records.append({'id':index+1,'llegada':round(arrival,2),'inicio':round(start,2),'fin':round(end,2),'espera':round((start-arrival)+(travel_start-ready),2),'espera_operador':round(start-arrival,2),'espera_equipo':round(travel_start-ready,2),'duracion':round(end-arrival,2),'localizacion':round(locate,2),'preparacion':round(prepare,2),'traslado':round(travel,2),'incidencia':incident,'tiempo_incidencia':round(incident_duration,2),'urgente':urgent,'a_tiempo':end<=p.turno_minutos,'hora_requerida':round(deadline,2),'retraso':round(late,2),'a_tiempo_requerido':end<=deadline,'riesgo_paro':late>p.tolerancia_paro_min})
+        records[-1]['prioridad']=urgency
     # Las solicitudes avanzan concurrentemente y compiten por los recursos.
     for index,task in enumerate(tasks): env.process(attend(index,task))
     # No se corta al final del turno: así conocemos el tiempo total de todas
@@ -128,4 +134,12 @@ def simulate(p):
     runs=[una_corrida(p,p.semilla+i) for i in range(p.replicas)]
     # Excluye los registros individuales al promediar los indicadores.
     fields=[key for key in runs[0] if key!='registros']
-    return {'parametros':p.model_dump(),'resumen':{field:round(mean(run[field] for run in runs),2) for field in fields},'corridas':[{'replica':i+1,**{key:round(run[key],2) for key in fields}} for i,run in enumerate(runs)],'muestra':runs[0]['registros'][:100],'nota':'Escenario hipotético: llegadas uniformes; servicios uniformes o triangulares; prioridad no expropiativa en ambas colas. El riesgo de paro representa retraso mayor a la tolerancia configurada, no una probabilidad industrial validada. Ocupación medida dentro del turno; las tareas pendientes se completan después.'}
+    by_priority={}
+    for priority in ['urgente','alta','normal']:
+        records=[record for run in runs for record in run['registros'] if record['prioridad']==priority]
+        by_priority[priority]={
+            'solicitudes':len(records),
+            'tiempo_total_promedio':round(mean(r['duracion'] for r in records),2) if records else None,
+            'espera_promedio':round(mean(r['espera'] for r in records),2) if records else None,
+        }
+    return {'parametros':p.model_dump(),'resumen':{field:round(mean(run[field] for run in runs),2) for field in fields},'corridas':[{'replica':i+1,**{key:round(run[key],2) for key in fields}} for i,run in enumerate(runs)],'por_prioridad':by_priority,'muestra':runs[0]['registros'][:100],'nota':'Escenario hipotético: llegadas uniformes; servicios uniformes o triangulares; prioridad no expropiativa en ambas colas. El riesgo de paro representa retraso mayor a la tolerancia configurada, no una probabilidad industrial validada. Ocupación medida dentro del turno; las tareas pendientes se completan después.'}

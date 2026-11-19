@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from sqlalchemy import create_engine, event, Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Text, UniqueConstraint, CheckConstraint, Table, Index, text
+from sqlalchemy import create_engine, event, Column, Integer, String, Float, ForeignKey, DateTime, Boolean, Text, JSON, UniqueConstraint, CheckConstraint, Table, Index, text
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from settings import DATABASE_URL
 
@@ -114,6 +114,7 @@ class Roll(Base):
     part_id = Column(ForeignKey('parts.id'), nullable=False, index=True)
     location_id = Column(ForeignKey('locations.id'), nullable=False, index=True)
     kg = Column(Float, nullable=False)
+    source_data = Column(JSON)
     status = Column(String(20), nullable=False, default='DISP', index=True)
     request_id = Column(ForeignKey('requests.id'), index=True)
     version = Column(Integer, nullable=False, default=1)

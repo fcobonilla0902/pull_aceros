@@ -129,9 +129,9 @@ export default function PullSteelPrototype() {
   if (checking) return <div className="p-10">Comprobando acceso...</div>;
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 p-5 font-sans text-slate-900" style={{ backgroundImage: "radial-gradient(circle at 18% 20%, #2558D9 0, transparent 28%), radial-gradient(circle at 82% 78%, #156E89 0, transparent 25%)" }}>
+      <div data-theme-section="acceso" className="min-h-screen bg-slate-950 p-5 font-sans text-slate-900" style={{ backgroundImage: "radial-gradient(circle at 18% 20%, var(--login-glow-primary) 0, transparent 28%), radial-gradient(circle at 82% 78%, var(--login-glow-secondary) 0, transparent 25%)" }}>
         <div className="mx-auto grid min-h-[calc(100vh-40px)] max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-2xl lg:grid-cols-2">
-          <div className="hidden bg-[#17243A] p-12 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="hidden bg-[var(--login-panel)] p-12 text-white lg:flex lg:flex-col lg:justify-between">
             <div className="flex items-center gap-3"><div className="rounded-2xl bg-blue-600 p-3"><Forklift /></div><div><p className="text-xl font-bold">Pull Aceros</p><p className="text-xs text-slate-300">Control de requerimientos ENN</p></div></div>
             <div>
               <Badge className="mb-5 border-0 bg-cyan-400/15 text-cyan-200">Operación en tiempo real</Badge>
@@ -169,8 +169,8 @@ export default function PullSteelPrototype() {
 
 
   return (
-    <div className="min-h-screen bg-[#F3F6FA] font-sans text-slate-900">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-7">
+    <div className="min-h-screen bg-[var(--app-background)] font-sans text-slate-900">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-[var(--app-header)] px-4 lg:px-7">
         <div className="flex items-center gap-3">
           <button onClick={() => setSidebar(!sidebar)} className="rounded-xl p-2 hover:bg-slate-100 lg:hidden"><Menu size={22}/></button>
           <div className="flex items-center gap-2.5"><div className="rounded-xl bg-blue-600 p-2 text-white"><Forklift size={20}/></div><div><p className="font-bold leading-4">Pull Aceros</p><p className="text-[10px] text-slate-500">Planta 100215</p></div></div>
@@ -185,14 +185,14 @@ export default function PullSteelPrototype() {
       {notify && <div className="fixed right-4 top-16 z-40 max-w-sm rounded-2xl border bg-white p-4 shadow-xl"><h3 className="font-bold">Alertas operativas</h3><p>{data.metrics.urgent} solicitudes urgentes</p><p>{data.metrics.due_soon} próximas a vencer (30 min)</p><p>{data.metrics.overdue} solicitudes retrasadas</p><p>{data.metrics.incidents} incidencias abiertas</p><p>{data.metrics.awaiting_handover_acceptance} turnos por aceptar</p><button onClick={()=>{setPage('kanban');setNotify(false);}}>Ver solicitudes</button></div>}
 
 
-      <aside className={`fixed bottom-0 left-0 top-16 z-40 w-64 border-r border-slate-200 bg-[#17243A] p-4 text-white transition-transform lg:translate-x-0 ${sidebar ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed bottom-0 left-0 top-16 z-40 w-64 border-r border-slate-200 bg-[var(--navigation-background)] p-4 text-white transition-transform lg:translate-x-0 ${sidebar ? "translate-x-0" : "-translate-x-full"}`}>
         <nav className="space-y-1">
-          {visibleNav.map(item => <button key={item.id} onClick={() => { setPage(item.id); setSidebar(false); }} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${page === item.id ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}><item.icon size={18}/>{item.label}</button>)}
+          {visibleNav.map(item => <button key={item.id} onClick={() => { setPage(item.id); setSidebar(false); }} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${page === item.id ? "bg-[var(--navigation-active)] text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}><item.icon size={18}/>{item.label}</button>)}
         </nav>
         <div className="absolute bottom-4 left-4 right-4 border-t border-white/10 pt-4"><button onClick={logout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-300 hover:bg-white/10"><LogOut size={18}/>Cerrar sesión</button></div>
       </aside>
 
-      <main className="p-4 pb-12 lg:ml-64 lg:p-7">
+      <main data-theme-section={page} className="p-4 pb-12 lg:ml-64 lg:p-7">
         {dataError && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-red-700">{dataError}</p>}
         {page === 'kanban' ? <Kanban requests={filteredRequests} ennFilter={ennFilter} setEnnFilter={setEnnFilter} search={search} setSearch={setSearch} onOpen={setSelected} presses={data.catalogs.presses}/> : page === 'simulacion' ? <SimulationPage/> : <OperationPage key={page} page={page} data={data} reload={reload} user={user} onCreated={()=>setPage('kanban')} onNavigate={setPage} onOpenRequest={setSelected}/>}
       </main>
@@ -214,7 +214,7 @@ function Kanban({ presses, requests, ennFilter, setEnnFilter, search, setSearch,
     <PageHead eyebrow="Seguimiento en vivo" title="Panel Kanban" description="Selecciona una tarjeta para consultar partidas, registrar avances, entregas o incidencias." />
     <Card className="mb-5 rounded-2xl border-0 shadow-sm"><CardContent className="flex flex-col gap-3 p-4 md:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-3 text-slate-400" size={18}/><Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar folio, ENN o número de parte" className="h-11 rounded-xl pl-10"/></div><select value={ennFilter} onChange={e => setEnnFilter(e.target.value)} className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm"><option>Todos</option>{presses.map(p => <option key={p.id}>{p.name}</option>)}</select></CardContent></Card>
     <div className="flex snap-x gap-4 overflow-x-auto pb-4">
-      {states.map(state => <section key={state} className="min-w-[286px] flex-1 snap-start rounded-2xl bg-slate-200/55 p-3 xl:min-w-[300px]"><div className="mb-3 flex items-center justify-between px-1"><div className="flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${state === "Con incidencia" ? "bg-red-500" : state === "Entrega parcial" ? "bg-orange-500" : "bg-blue-500"}`}/><h2 className="text-sm font-bold">{state}</h2></div><Badge variant="secondary" className="rounded-full">{requests.filter(r => r.state === state).length}</Badge></div><div className="space-y-3">{requests.filter(r => r.state === state).map(r => <RequestCard key={r.id} request={r} onOpen={onOpen}/>)}{requests.filter(r => r.state === state).length === 0 && <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-400">Sin solicitudes</div>}</div></section>)}
+      {states.map(state => <section key={state} className="min-w-[286px] flex-1 snap-start rounded-2xl bg-[var(--kanban-column-background)]/55 p-3 xl:min-w-[300px]"><div className="mb-3 flex items-center justify-between px-1"><div className="flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${state === "Con incidencia" ? "bg-red-500" : state === "Entrega parcial" ? "bg-orange-500" : "bg-[var(--kanban-status-dot)]"}`}/><h2 className="text-sm font-bold">{state}</h2></div><Badge variant="secondary" className="rounded-full">{requests.filter(r => r.state === state).length}</Badge></div><div className="space-y-3">{requests.filter(r => r.state === state).map(r => <RequestCard key={r.id} request={r} onOpen={onOpen}/>)}{requests.filter(r => r.state === state).length === 0 && <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-400">Sin solicitudes</div>}</div></section>)}
     </div>
   </>;
 }

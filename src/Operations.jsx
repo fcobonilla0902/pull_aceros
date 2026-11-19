@@ -7,7 +7,7 @@ import InventoryImport from './InventoryImport';
 import RequestEditor from './RequestEditor';
 import { post, API } from './api';
 const input = 'w-full rounded-xl border border-slate-200 bg-white p-3 text-sm';
-const button = 'rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
+const button = 'rounded-xl bg-[var(--operations-action,var(--color-blue-600))] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
 const panel = 'rounded-2xl bg-white p-5 shadow-sm space-y-4';
 export function FormField({ label, children }) { return <label className="block space-y-1 text-sm font-semibold text-slate-600"><span>{label}</span>{children}</label>; }
 function Select({ name, rows, label, required = true }) { return <FormField label={label}><select name={name} required={required} className={input}><option value="">Selecciona: {label.toLowerCase()}</option>{rows.filter(x=>x.active!==false).map(x => <option key={x.id} value={x.id}>{x.name || x.code || x.username}{x.specification ? ` · ${x.specification}` : ''}</option>)}</select></FormField>; }
@@ -39,7 +39,7 @@ export function OperationPage({ page, data, reload, user, onCreated, onNavigate,
   if (page === 'inventario') content = <>
     {can('inventory')&&<InventoryImport reload={reload}/>}
     <input placeholder="Buscar rollo, parte o ubicación" value={query} onChange={e=>setQuery(e.target.value)} className={input}/>
-    <div className={`${panel} overflow-x-auto`}><table className="w-full text-left text-sm"><thead><tr>{['Rollo','Parte','Ubicación','Kg','Estado','Solicitud'].map(x=><th key={x} className="p-3">{x}</th>)}</tr></thead><tbody>{data.inventory.filter(r=>`${r.code} ${r.part} ${r.location}`.toLowerCase().includes(query.toLowerCase())).map(r=><tr key={r.id} className="border-t"><td className="p-3 font-semibold">{r.code}</td><td>{r.part}</td><td>{r.location}</td><td>{r.kg}</td><td>{r.status}{r.kg<=500?' · No elegible':''}</td><td>{r.request_id || '—'}</td></tr>)}</tbody></table>{!data.inventory.length&&<p>Sin rollos registrados. Agrega números de parte y ubicaciones en Administración.</p>}</div>
+    <div className={`${panel} overflow-x-auto`}><table className="w-full text-left text-sm"><thead><tr>{['Rollo','Parte','Ubicación','Kg','Estado','Solicitud'].map(x=><th key={x} className="p-3">{x}</th>)}</tr></thead><tbody>{data.inventory.filter(r=>`${r.code} ${r.part} ${r.location}`.toLowerCase().includes(query.toLowerCase())).map(r=><tr key={r.id} className="border-t align-top"><td className="p-3 font-semibold">{r.code}{r.source_data&&<InventorySourceDetails source={r.source_data}/>}</td><td>{r.part}</td><td>{r.location}</td><td>{r.kg}</td><td>{r.status}{r.kg<=500?' · No elegible':''}</td><td>{r.request_id || '—'}</td></tr>)}</tbody></table>{!data.inventory.length&&<p>Sin rollos registrados. Puedes importar existencias o registrarlos manualmente.</p>}</div>
     {can('inventory')&&<form className={panel} onSubmit={e=>submit(e,'/api/inventory',f=>({...f,part_id:Number(f.part_id),location_id:Number(f.location_id),kg:Number(f.kg)}))}><h2 className="font-bold">Registrar rollo</h2><div className="grid gap-3 md:grid-cols-2"><FormField label="Código único"><input name="code" required maxLength={80} placeholder="Ej. ROL-00125" className={input}/></FormField><Select label="Número de parte y especificación" name="part_id" rows={c.parts}/><Select label="Ubicación" name="location_id" rows={c.locations}/><FormField label="Peso en kg"><input name="kg" type="number" required min="0.01" max="1000000" step="0.01" placeholder="Ej. 1500.50" className={input}/></FormField></div><button disabled={busy} className={button}>Guardar rollo</button></form>}
   </>;
   if (page === 'historial') content = <>
@@ -50,6 +50,17 @@ export function OperationPage({ page, data, reload, user, onCreated, onNavigate,
   if (page === 'admin') content = can('admin') ? <AdminPage data={data} user={user} reload={reload}/> : <p>Acceso restringido a administradores.</p>;
   if (page === 'cuenta') content=<AccountPage user={user}/>;
   return <div className="space-y-5"><h1 className="text-3xl font-bold">{{resumen:'Resumen operativo',nueva:'Nueva solicitud',inventario:'Inventario de rollos',historial:'Historial y exportación',turno:'Cambio de turno',admin:'Administración',cuenta:'Mi cuenta'}[page]}</h1>{alerts}{content}</div>;
+}
+
+function InventorySourceDetails({source}) {
+  return <details className="mt-1 text-xs font-normal">
+    <summary className="cursor-pointer text-blue-700">Datos del Excel</summary>
+    <dl className="mt-2 space-y-1">
+      {Object.entries(source).map(([label,value])=><div key={label}>
+        <dt className="font-semibold">{label}</dt><dd>{value || '—'}</dd>
+      </div>)}
+    </dl>
+  </details>;
 }
 export function OperationalDetail({ request:r, catalogs:c, user, reload, onClose }) {
   const [error,setError]=useState(''); const [busy,setBusy]=useState(false);
